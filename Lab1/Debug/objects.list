@@ -1,4 +1,4 @@
-"./Core/Src/led7seg_display.o"
+"./Core/Src/clock_funtion.o"
 "./Core/Src/main.o"
 "./Core/Src/software_timer.o"
 "./Core/Src/stm32f1xx_hal_msp.o"
