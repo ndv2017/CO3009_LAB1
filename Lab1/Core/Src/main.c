@@ -59,11 +59,16 @@ static void MX_TIM2_Init(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-enum led_state {
-	red0,
-	yellow0,
-	green0
+enum led_state{
+	red0_green1,
+	red0_yellow1,
+	green0_red1,
+	yellow0_red1,
 };
+int red0_green1_duration = green_duration;
+int red0_yellow1_duration = red_duration - green_duration;
+int green0_red1_duration = green_duration;
+int yellow0_red1_duration = red_duration - green_duration;
 /* USER CODE END 0 */
 
 /**
@@ -97,36 +102,49 @@ int main(void)
   MX_TIM2_Init();
   /* USER CODE BEGIN 2 */
   HAL_GPIO_WritePin(LED_RED0_GPIO_Port, LED_RED0_Pin, GPIO_PIN_RESET);
-  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_SET);
   HAL_GPIO_WritePin(LED_GREEN0_GPIO_Port, LED_GREEN0_Pin, GPIO_PIN_SET);
-  //HAL_TIM_Base_Start_IT (& htim2);
-  enum led_state current_state = red0;
+  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LED_RED1_GPIO_Port, LED_RED1_Pin, GPIO_PIN_SET);
+  HAL_GPIO_WritePin(LED_GREEN1_GPIO_Port, LED_GREEN1_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(LED_YELLOW1_GPIO_Port, LED_YELLOW1_Pin, GPIO_PIN_SET);
+  //HAL_TIM_Base_Start_IT(&htim2);
+  enum led_state current_state = red0_green1;
   enum led_state next_state = current_state;
-  setTimer0(red_duration);
+  setTimer0(red0_green1_duration);
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1){
-	  if (timer0_flag == 1) {
-		  switch (current_state) {
-		  case red0:
+	  if (timer0_flag == 1){
+		  switch (current_state){
+		  case red0_green1:
+			  HAL_GPIO_WritePin(LED_GREEN1_GPIO_Port, LED_GREEN1_Pin, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(LED_YELLOW1_GPIO_Port, LED_YELLOW1_Pin, GPIO_PIN_RESET);
+			  next_state = red0_yellow1;
+			  setTimer0(red0_yellow1_duration);
+			  break;
+		  case red0_yellow1:
 			  HAL_GPIO_WritePin(LED_RED0_GPIO_Port, LED_RED0_Pin, GPIO_PIN_SET);
-			  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_RESET);
-			  next_state = yellow0;
-			  setTimer0(yellow_duration);
-			  break;
-		  case yellow0:
-			  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_SET);
 			  HAL_GPIO_WritePin(LED_GREEN0_GPIO_Port, LED_GREEN0_Pin, GPIO_PIN_RESET);
-			  next_state = green0;
-			  setTimer0(green_duration);
+			  HAL_GPIO_WritePin(LED_YELLOW1_GPIO_Port, LED_YELLOW1_Pin, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(LED_RED1_GPIO_Port, LED_RED1_Pin, GPIO_PIN_RESET);
+			  next_state = green0_red1;
+			  setTimer0(green0_red1_duration);
 			  break;
-		  case green0:
+		  case green0_red1:
 			  HAL_GPIO_WritePin(LED_GREEN0_GPIO_Port, LED_GREEN0_Pin, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_RESET);
+			  next_state = yellow0_red1;
+			  setTimer0(yellow0_red1_duration);
+			  break;
+		  case yellow0_red1:
+			  HAL_GPIO_WritePin(LED_YELLOW0_GPIO_Port, LED_YELLOW0_Pin, GPIO_PIN_SET);
 			  HAL_GPIO_WritePin(LED_RED0_GPIO_Port, LED_RED0_Pin, GPIO_PIN_RESET);
-			  next_state = red0;
-			  setTimer0(red_duration);
+			  HAL_GPIO_WritePin(LED_RED1_GPIO_Port, LED_RED1_Pin, GPIO_PIN_SET);
+			  HAL_GPIO_WritePin(LED_GREEN1_GPIO_Port, LED_GREEN1_Pin, GPIO_PIN_RESET);
+			  next_state = red0_green1;
+			  setTimer0(red0_green1_duration);
 			  break;
 		  default:
 			  break;
@@ -235,10 +253,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOA_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOA, LED_RED0_Pin|LED_YELLOW0_Pin|LED_GREEN0_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_RED0_Pin|LED_YELLOW0_Pin|LED_GREEN0_Pin|LED_RED1_Pin
+                          |LED_YELLOW1_Pin|LED_GREEN1_Pin, GPIO_PIN_RESET);
 
-  /*Configure GPIO pins : LED_RED0_Pin LED_YELLOW0_Pin LED_GREEN0_Pin */
-  GPIO_InitStruct.Pin = LED_RED0_Pin|LED_YELLOW0_Pin|LED_GREEN0_Pin;
+  /*Configure GPIO pins : LED_RED0_Pin LED_YELLOW0_Pin LED_GREEN0_Pin LED_RED1_Pin
+                           LED_YELLOW1_Pin LED_GREEN1_Pin */
+  GPIO_InitStruct.Pin = LED_RED0_Pin|LED_YELLOW0_Pin|LED_GREEN0_Pin|LED_RED1_Pin
+                          |LED_YELLOW1_Pin|LED_GREEN1_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
@@ -247,7 +268,7 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-//void HAL_TIM_PeriodElapsedCallback (TIM_HandleTypeDef * htim) {
+//void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef * htim){
 //	runTimer();
 //}
 /* USER CODE END 4 */
