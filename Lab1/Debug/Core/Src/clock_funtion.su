@@ -1,1 +1,4 @@
 clock_funtion.c:12:6:testClock	16	static
+clock_funtion.c:71:6:clearAllClock	8	static
+clock_funtion.c:86:6:setNumberOnClock	16	static
+clock_funtion.c:129:6:clearNumberOnClock	16	static
